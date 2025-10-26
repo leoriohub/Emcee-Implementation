@@ -5,9 +5,9 @@ This repository contains Python code and Jupyter Notebooks for estimating cosmol
 
 ## Overview
 
-This project fits different cosmological models ($\Lambda$CDM, $w$CDM, CPL) to observational data using the `emcee` MCMC sampler and visualizes the results with `corner` plots.
+This project fits different cosmological models ($\Lambda CDM$, $\omega CDM$, $CPL$) to observational data using the `emcee` MCMC sampler and visualizes the results with `corner` plots.
 
-The files `notebook1_soluciones.ipynb` and `notebook2_soluciones.ipynb` contain the problems associated with notebooks 1 and 2. To review the MCMC implementation, please refer to the `emcee_implementation.ipynb` notebook. The `cosmology*.py` and `cornerplot.py` files contain more details.
+The files `notebook1_soluciones.ipynb` and `notebook2_soluciones.ipynb` contain the problems associated with notebooks 1 and 2 proposed by Prof. Susana. To review the MCMC implementation, please refer to the `emcee_implementation.ipynb` notebook. The `cosmology*.py` and `cornerplot.py` files contain more details.
 
 ## Dependencies
 
