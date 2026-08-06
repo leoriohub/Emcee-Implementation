@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# MCMC result binaries
+*.npz
+*.jls
+julia/results/
