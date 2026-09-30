@@ -58,3 +58,12 @@ The data files are in the repository root:
 - `julia/run_mcmc.jl` and `julia/src/` — Julia Turing/NUTS sampler and supporting code.
 
 The Python supernova loader uses diagonal errors. The Julia sampler uses the full covariance matrix when its last argument is `true`.
+
+## Guides and notebooks
+
+- [Python MCMC implementation](mcmc_implementation.md) — posterior construction, sampling flow, burn-in, and convergence caveats.
+- [Adding a cosmological model](tutorial_add_new_model.md) — implementing `H(z)` and using or registering a model.
+- [Original `emcee` walkthrough](emcee_implementation.ipynb) — model equations and a standalone sampler example.
+- [Custom-model demo](demo_new_model.ipynb) — adds a model to the shared Python pipeline.
+- [Model-comparison demo](demo_comparison.ipynb) — saves, reloads, and compares MCMC results.
+- [Advanced-analysis notebook](advanced_analysis.ipynb) — comparison tables and extension-parameter plots.

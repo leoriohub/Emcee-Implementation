@@ -1,10 +1,10 @@
-# Tutorial: How to Add a New Cosmological Model
+# Adding a cosmological model
 
-This guide explains how to extend the generalized framework with your own cosmological models. The architecture is designed so you only need to focus on the physics ($H(z)$), while the framework handles the data, integration, likelihoods, and MCMC execution.
+Python models live in [`src/models.py`](src/models.py) and inherit from [`CosmologyModel`](src/base_model.py). A model supplies its parameter labels, prior bounds, and vectorized Hubble function `H(z)`.
 
-## Step 1: Create Your Model Class
+## Define the model
 
-All models must inherit from the `CosmologyModel` base class found in `src/base_model.py`.
+Keep the parameter order consistent across `param_names`, `param_bounds`, and the arguments to `H`.
 
 ```python
 import numpy as np
@@ -13,53 +13,44 @@ from src.base_model import CosmologyModel
 class MyNewModel(CosmologyModel):
     def __init__(self):
         super().__init__(
-            name="My New Physics Model",
-            param_names=[r"H_0", r"p_1", r"p_2"],  # Use LaTeX labels if you like
-            param_bounds=[(40, 100), (-5, 5), (0, 1)] # Define prior ranges
+            name="My New Model",
+            param_names=[r"H_0", r"p_1", r"p_2"],
+            param_bounds=[(40, 100), (-5, 5), (0, 1)],
         )
-```
 
-## Step 2: Implement the Hubble Parameter $H(z)$
-
-Override the `H` method. **Crucial:** Always use safeguards (like `np.where` or `np.nan`) to handle unphysical parameter regions where the expansion rate might become imaginary or negative.
-
-```python
     def H(self, z, H0, p1, p2):
-        # Example expansion rate: H(z) = H0 * sqrt(1 + p1*z + p2*z^3)
-        term = 1 + p1 * z + p2 * z**3
-        
-        # Safeguard: If term <= 0, return NaN. 
-        # The likelihood engine will automatically catch this and return -inf.
-        return np.where(term > 0, H0 * np.sqrt(term), np.nan)
+        term = 1 + p1 * z + p2 * z**2
+        return np.where(term > 0, H0 * np.sqrt(np.maximum(term, 0)), np.nan)
 ```
 
-## Step 3: Use Your Model
+`param_bounds` defines the uniform prior. `H` must work with NumPy arrays; return non-finite values for unphysical parameter combinations so the posterior rejects them.
 
-You can now use your model in two ways:
+## Try the model directly
 
-### Option A: Direct Injection (Recommended for testing)
-Pass an instance of your class directly to `run_mcmc`.
+Run this from the repository root. The file names below are the data files in this repository.
 
 ```python
 from src.run_inference import run_mcmc
 
-model_instance = MyNewModel()
-model, sampler, samples, results = run_mcmc(model_instance, "cc_data.tex", "sn_data.txt")
+model, sampler, samples, results = run_mcmc(
+    MyNewModel(),
+    "Cosmic_chronometers_data.tex",
+    "Pantheon+SH0ES.dat.txt",
+)
 ```
 
-### Option B: Permanent Integration
-If you add your class to `src/models.py`, the pipeline will **automatically discover it**. You can then run it by name:
+Passing an instance is useful while developing. The sampler settings and posterior flow are described in [the Python MCMC guide](mcmc_implementation.md).
+
+## Register it for lookup by name
+
+To call `run_mcmc("MYNEW", ...)`, define `MyNewModel` in `src/models.py`. The runner discovers subclasses in that module and derives the lookup key by removing the `Model` suffix and uppercasing the class name.
 
 ```python
-# In src/models.py:
-class MyNewModel(CosmologyModel):
-    ...
-
-# Then anywhere else:
-run_mcmc("MYNEW", "cc_data.tex", "sn_data.txt")  # Name is derived from class name (lowercase/uppercase works)
+model, sampler, samples, results = run_mcmc(
+    "MYNEW",
+    "Cosmic_chronometers_data.tex",
+    "Pantheon+SH0ES.dat.txt",
+)
 ```
 
-## Best Practices
-1. **Vectorization**: Ensure your `H(z)` function can handle `z` being a NumPy array (which it will be!). Use `np.sqrt`, `np.exp`, etc., instead of the `math` library.
-2. **Safeguards**: Never let your function return a complex number or a negative $H(z)$. Return `np.nan` instead.
-3. **Labels**: Use LaTeX in `param_names` (e.g., `r"\Omega_m"`) to get beautiful labels in your corner plots.
+Use unique class names and check that the bounds and equations describe the same parameter order. The [`demo_new_model.ipynb`](demo_new_model.ipynb) notebook shows a model added to the shared pipeline.
